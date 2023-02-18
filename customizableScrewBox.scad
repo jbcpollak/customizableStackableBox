@@ -5,20 +5,20 @@ include <Round-Anything/polyround.scad>
 drawerDepth = 260;
 /* [Outside Box Dimensions] */
 //Box Length
-boxLen=200;
+boxLen=171; // 343 remaining
 //Box Width
-boxWid=121.6;
+boxWid=127; // Back Dim = 134; Front Dim = 124
 //Box Height
 boxHgt=51;
 //Wall thickness
 boxThick=1.2;
-radius = 5;
+radius = 8;
 // Percentage of slope to use
 slope_radius_pct=0.8;//0.0:1.0
 
 /* [Compartments] */
 // Number of Compartments
-numSections=1;
+numSections=2;
 // Merge sections (make one side bigger, use 2 or more to merge, 0 or 1 to normal)
 mergeSections=1;
 
@@ -52,12 +52,12 @@ module roundedCube(w, l, h, r, rt, rb) {
 module extrudeInsides(l, w, h, r, slope_radius_pct = 1) {
     radiiPoints=[
         [0, 0, (w/2-r)*slope_radius_pct+r],
-        [0, h*2, 0 ],
-        [w, h*2, 0 ],
+        [0, h+r, 0 ],
+        [w, h+r, 0 ],
         [w, 0, r ]
     ];
     rotate([90, 0, -90])
-    translate([-w/2, -h/2,-l/2])
+    translate([-w/2, -h, -l/2])
     difference() {        
         polyRoundExtrude(radiiPoints,l,r,r,fn=$fn*2/3);
         translate([0, l, 0]) cube([w+.1, h+.1, l+.1]);
@@ -71,26 +71,19 @@ module screwBox() {
     
     compartmentLen = (boxLen-boxThick*(dividerCount+2))/(dividerCount+1);
     
+    translate([0,0,boxHgt/2])
 	difference() {
 		// outerbox
-		translate([0,0,boxHgt/2])
-			cube([boxLen,boxWid,boxHgt],center=true);
+        cube([boxLen,boxWid,boxHgt],center=true);
 		
-            //translate([0,0,0.1+(boxHgt/2+boxThick/2)]) 
-//            extrudeInsides(boxLen-boxThick*2, boxWid-boxThick*2, boxHgt-boxThick+0.1, radius, slope_radius_pct);
-        
-        	// dividers
-            for (sep=[1:dividerCount+1]) {
-                translate([(boxLen-compartmentLen)/2-boxThick-(sep-1)*(compartmentLen+boxThick),0,boxHgt/2])
-                    extrudeInsides(compartmentLen, boxWid-boxThick*2, boxHgt-boxThick+0.1, radius, slope_radius_pct);
+        // dividers
+        for (sep=[1:dividerCount+1]) {
+            translate([(boxLen-compartmentLen)/2-boxThick-(sep-1)*(compartmentLen+boxThick),0,boxHgt/2])
+                extrudeInsides(compartmentLen, boxWid-boxThick*2, boxHgt-boxThick+0.1, radius, slope_radius_pct);
 	}
           
 	}
-	// dividers
-	//for (sep=[1:dividerCount]) {
-	//	translate([(boxLen-boxThick)/2-sep*(boxLen-boxThick)/numSections,0,boxHgt/2])
-	//		cube([boxThick,boxWid,boxHgt],center=true);
-	//}
+
 	// rim
 	rotate([180,0,0])union() {
 		translate([0,0,0-boxHgt])difference() {
